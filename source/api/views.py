@@ -31,26 +31,42 @@ class QuoteViewSet(viewsets.ModelViewSet):
             queryset = self.filter_queryset(self.get_queryset())
             serializer = self.get_serializer(queryset, many=True)
         else:
-            queryset = self.filter_queryset(self.get_queryset()).filter(status=Quote.STATUS_CHOICES[0][0])
+            queryset = self.filter_queryset(self.get_queryset()).filter(status=Quote.STATUS_CHOICES[1][0])
             serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.is_authenticated is False and instance.status == Quote.STATUS_CHOICES[0][0]:
+        if request.user.is_authenticated is False and instance.status == Quote.STATUS_CHOICES[1][0]:
             serializer = self.get_serializer(instance)
-            print('h')
             return Response(serializer.data)
         elif request.user.is_authenticated:
-            print('u')
+            print('u r here')
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
-class RateView(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+# class RateView(viewsets.ModelViewSet):
+#     permission_classes = (AllowAny,)
+#
+#     queryset = Quote.objects.all()
+#     serializer_class = QuoteRateSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         print(request.data)
+#         return super().update(*args, **kwargs)
 
-    queryset = Quote.objects.all()
-    serializer_class = QuoteRateSerializer
+class RateView(APIView):
+    permission_classes = [AllowAny, ]
+
+    def post(self, request, *args, **kwargs):
+        quote = Quote.objects.get(pk=kwargs['pk'])
+        operation = request.data['rating']
+        if operation == 'plus':
+            quote.rating = quote.rating + 1
+        else:
+            quote.rating = quote.rating - 1
+        quote.save()
+        return JsonResponse({'status':'ok'})

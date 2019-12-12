@@ -202,6 +202,7 @@
                             + '<br><strong>Рейтинг:</strong>' + response[i].rating + '<br>');
                         let myForm = $(document.createElement('form'));
                         myForm.attr('onsubmit', 'event.preventDefault()');
+                        {#myForm.on('submit', function(event) {event.preventDefault();});#}
                         let quoteRateUp = $(document.createElement('button'));
                         quoteRateUp.text('+');
                         quoteRateUp.addClass('btn btn-success');
@@ -289,17 +290,17 @@
         }
 
         function quoteRateUp(num, rating, operation) {
-            let newRating = rating;
-            if (operation === 'plus') {
-                newRating += 1;
-            }
-            else {
-                newRating -= 1;
-            }
+            {#let newRating = rating;#}
+            {#if (operation === 'plus') {#}
+            {#    newRating += 1;#}
+
+            {#else {#}
+            {#    newRating -= 1;#}
+
             $.ajax({
                 url: baseUrl + 'rate/' + num + '/',
-                method: 'patch',
-                data: JSON.stringify({rating: newRating}),
+                method: 'post',
+                data: JSON.stringify({rating: operation}),
                 dataType: 'json',
                 contentType: 'application/json',
 
@@ -342,6 +343,7 @@
                 method: 'get',
                 dataType: 'json',
                 contentType: 'application/json',
+                headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
 
                 success: function (response) {
                     let myButton = $('#quotesavebutton_id');
