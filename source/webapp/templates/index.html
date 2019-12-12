@@ -73,7 +73,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form onsubmit="event.preventDefault()">
+                <form onsubmit="event.preventDefault()" id="quotecreateform_id">
                     <div class="modal-body" id="quoteform_id">
                         <label id="someid_1">Имя: <input type="text" id="input_name_id" class="create-inputs" required></label><br>
                         <label id="someid_2">Цитата: <textarea class="create-inputs" required
@@ -108,7 +108,7 @@
             {#console.log(userName.val(),userPass.val());#}
             $.ajax({
 
-                url: baseUrl+'login/',
+                url: baseUrl + 'login/',
 
                 method: 'post',
 
@@ -139,7 +139,7 @@
 
         function logout() {
             $.ajax({
-                url: baseUrl+'logout/',
+                url: baseUrl + 'logout/',
                 method: 'post',
                 dataType: 'json',
                 contentType: 'application/json',
@@ -181,16 +181,13 @@
             quotesContainer.text('');
             let autorCred = {};
             console.log(localStorage.getItem('apiToken'));
-            if (localStorage.getItem('apiToken')){
-                autorCred['Authorization']='Token ' + localStorage.getItem('apiToken');
+            if (localStorage.getItem('apiToken')) {
+                autorCred['Authorization'] = 'Token ' + localStorage.getItem('apiToken');
                 console.log(autorCred['Authorization'])
-            }
-            else{
-                autorCred = {};
             }
 
             $.ajax({
-                url: baseUrl+'quotes/',
+                url: baseUrl + 'quotes/',
                 method: 'get',
                 dataType: 'json',
                 contentType: 'application/json',
@@ -242,17 +239,18 @@
         }
 
         function quoteDetails(num) {
+            let header = {};
+            if (localStorage.getItem('apiToken')) {
+                header['Authorization'] = 'Token ' + localStorage.getItem('apiToken')
+            }
             $.ajax({
-                url: baseUrl+'quotes/' + num + '/',
+                url: baseUrl + 'quotes/' + num + '/',
                 method: 'get',
                 dataType: 'json',
                 contentType: 'application/json',
+                headers: header,
 
                 success: function (response) {
-                    if (!localStorage.getItem('apiToken') && response.status==='checked'){
-                        console.log('Доступ запрещен!!!')
-                    }
-                    else{
                     let myDiv = $('.quotes');
                     myDiv.text('');
                     let quote = $(document.createElement('div'));
@@ -267,15 +265,14 @@
                     quotesBack.attr('onclick', "loadQuotes()");
                     quote.append(quotesBack);
                     myDiv.append(quote);
+                },
 
-                    }
-                }
             })
         }
 
         function quoteDelete(num) {
             $.ajax({
-                url: baseUrl+'quotes/' + num + '/',
+                url: baseUrl + 'quotes/' + num + '/',
 
                 method: 'delete',
 
@@ -300,7 +297,7 @@
                 newRating -= 1;
             }
             $.ajax({
-                url: baseUrl+'rate/' + num + '/',
+                url: baseUrl + 'rate/' + num + '/',
                 method: 'patch',
                 data: JSON.stringify({rating: newRating}),
                 dataType: 'json',
@@ -341,7 +338,7 @@
 
         function quoteChangeForm(num) {
             $.ajax({
-                url: baseUrl+'quotes/' + num + '/',
+                url: baseUrl + 'quotes/' + num + '/',
                 method: 'get',
                 dataType: 'json',
                 contentType: 'application/json',
@@ -367,7 +364,7 @@
         function quoteChangeSave(num) {
 
             $.ajax({
-                url: baseUrl+'quotes/' + num + '/',
+                url: baseUrl + 'quotes/' + num + '/',
                 method: 'put',
                 data: JSON.stringify({
                     name: $('#input_name_id').val(),
@@ -391,24 +388,30 @@
         }
 
         function quoteSave() {
-            $.ajax({
-                url: baseUrl+'quotes/',
-                method: 'post',
-                data: JSON.stringify({
-                    name: $('#input_name_id').val(),
-                    text: $('#quote_input_id').val(),
-                    email: $('#mail_input_id').val(),
-                    status: 'new'
-                }),
-                dataType: 'json',
-                contentType: 'application/json',
+            $('#quotecreateform_id').submit(function () {
+                $(this).validate()
+                if ($(this).valid()) {
+                    $.ajax({
+                        url: baseUrl + 'quotes/',
+                        method: 'post',
+                        data: JSON.stringify({
+                            name: $('#input_name_id').val(),
+                            text: $('#quote_input_id').val(),
+                            email: $('#mail_input_id').val(),
+                            status: 'new'
+                        }),
+                        dataType: 'json',
+                        contentType: 'application/json',
 
-                success: function () {
-                    loadQuotes();
-                    popupChange('Цитата создана', 1000);
-                    $('#staticBackdrop1').modal('hide');
+                        success: function () {
+                            loadQuotes();
+                            popupChange('Цитата создана', 1000);
+                            $('#staticBackdrop1').modal('hide');
+                        }
+                    })
                 }
-            })
+            });
+
         }
     </script>
 

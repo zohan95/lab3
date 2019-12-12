@@ -35,12 +35,22 @@ class QuoteViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.is_authenticated is False and instance.status == Quote.STATUS_CHOICES[0][0]:
+            serializer = self.get_serializer(instance)
+            print('h')
+            return Response(serializer.data)
+        elif request.user.is_authenticated:
+            print('u')
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
 
 class RateView(viewsets.ModelViewSet):
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)
 
     queryset = Quote.objects.all()
     serializer_class = QuoteRateSerializer
-
-
-
