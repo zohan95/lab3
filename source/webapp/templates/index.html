@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Quotes</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" onclick="loadQuotes()">Home</a>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="btn btn-success" id="quote_create_id" data-toggle="modal"
+                            data-target="#staticBackdrop1" onclick="quoteCreateForm()">
+                        +Добавить
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="btn btn-primary" id="login_id" data-toggle="modal"
+                            data-target="#staticBackdrop">
+                        Вход
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="logout_id" style="display: none" onclick="logout()">Выход</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="alert alert-warning alert-dismissible fade" role="alert">
+        some
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="container quotes"></div>
+
+    <div class="modal fade" id="staticBackdrop" data-backdrop="static" tabindex="-1" role="dialog"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">admin 123</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form onsubmit="event.preventDefault()">
+                    <div>
+                        <label>Username:<input type="text" id="username_id" required></label>
+                        <label>Password:<input type="password" id="password_id" required></label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" onclick="login()">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="staticBackdrop1" data-backdrop="static" tabindex="-1" role="dialog"
+         aria-labelledby="staticBackdropLabel1" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel1">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form onsubmit="event.preventDefault()">
+                    <div class="modal-body" id="quoteform_id">
+                        <label id="someid_1">Имя: <input type="text" id="input_name_id" class="create-inputs" required></label><br>
+                        <label id="someid_2">Цитата: <textarea class="create-inputs" required
+                                                               id="quote_input_id"></textarea></label><br>
+                        <label id="someid_3">Почта: <input type="email" class="create-inputs" required
+                                                           id="mail_input_id"></label><br>
+                        <label id="someid_4">Статус:
+                            <select id="select_id">
+                                <option value="new">Новое</option>
+                                <option value="checked">Проверенное</option>
+                            </select>
+                        </label><br>
+                        <label id="someid_5">Рейтинг: <input type="text" id="rating_input_id"
+                                                             class="create-inputs"></label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="quotesavebutton_id">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const baseUrl = 'http://127.0.0.1:8000/api/';
+
+        function login() {
+            let userName = $('#username_id');
+            let userPass = $('#password_id');
+            {#console.log(userName.val(),userPass.val());#}
+            $.ajax({
+
+                url: baseUrl+'login/',
+
+                method: 'post',
+
+                data: JSON.stringify({username: userName.val(), password: userPass.val()}),
+
+                dataType: 'json',
+
+                contentType: 'application/json',
+
+                success: function (response, status) {
+                    localStorage.setItem('apiToken', response.token);
+                    let loginA = $('#login_id');
+                    loginA.css('display', 'none');
+                    let logoutA = $('#logout_id');
+                    logoutA.css('display', 'block');
+                    $('#staticBackdrop').modal('hide');
+                    popupChange('Добро пожаловать, пользователь ' + userName.val() + '!!!');
+                    userName.val('');
+                    userPass.val('');
+                    loadQuotes();
+                },
+                error: function (response, status) {
+                    console.log('not logged in')
+                }
+
+            });
+        }
+
+        function logout() {
+            $.ajax({
+                url: baseUrl+'logout/',
+                method: 'post',
+                dataType: 'json',
+                contentType: 'application/json',
+
+                success: function () {
+                    let loginA = $('#login_id');
+                    loginA.css('display', 'block');
+                    let logoutA = $('#logout_id');
+                    logoutA.css('display', 'none');
+                    popupChange('Досвидос', 2000);
+                },
+                error: function () {
+                    let loginA = $('#login_id');
+                    loginA.css('display', 'block');
+                    let logoutA = $('#logout_id');
+                    logoutA.css('display', 'none');
+                    popupChange('Досвидос', 2000);
+                }
+            });
+            localStorage.removeItem('apiToken');
+            loadQuotes();
+
+        }
+
+
+        $(document).ready(function () {
+            loadQuotes();
+            if (localStorage.getItem('apiToken')) {
+                let loginA = $('#login_id');
+                loginA.css('display', 'none');
+                let logoutA = $('#logout_id');
+                logoutA.css('display', 'block');
+            }
+
+        });
+
+        function loadQuotes() {
+            let quotesContainer = $('.quotes');
+            quotesContainer.text('');
+            let autorCred = {};
+            console.log(localStorage.getItem('apiToken'));
+            if (localStorage.getItem('apiToken')){
+                autorCred['Authorization']='Token ' + localStorage.getItem('apiToken');
+                console.log(autorCred['Authorization'])
+            }
+            else{
+                autorCred = {};
+            }
+
+            $.ajax({
+                url: baseUrl+'quotes/',
+                method: 'get',
+                dataType: 'json',
+                contentType: 'application/json',
+                headers: autorCred,
+
+                success: function (response) {
+                    for (let i = 0; i < response.length; i++) {
+                        let quote = $(document.createElement('div'));
+                        quote.addClass('quote');
+                        quote.append('<strong>Цитата:</strong>'
+                            + response[i].text + '<br><strong>Дата создания:</strong>' + response[i].date_create
+                            + '<br><strong>Рейтинг:</strong>' + response[i].rating + '<br>');
+                        let myForm = $(document.createElement('form'));
+                        myForm.attr('onsubmit', 'event.preventDefault()');
+                        let quoteRateUp = $(document.createElement('button'));
+                        quoteRateUp.text('+');
+                        quoteRateUp.addClass('btn btn-success');
+                        quoteRateUp.attr('onclick', "quoteRateUp(" + response[i].id + "," + response[i].rating + ",'plus')");
+                        myForm.append(quoteRateUp);
+                        let quoteRateDown = $(document.createElement('button'));
+                        quoteRateDown.text('-');
+                        quoteRateDown.addClass('btn btn-warning');
+                        quoteRateDown.attr('onclick', "quoteRateUp(" + response[i].id + "," + response[i].rating + ",'minus')");
+                        myForm.append(quoteRateDown);
+                        let quoteDetails = $(document.createElement('button'));
+                        quoteDetails.text('Details');
+                        quoteDetails.addClass('btn btn-info');
+                        quoteDetails.attr('onclick', "quoteDetails(" + response[i].id + ")");
+                        myForm.append(quoteDetails);
+                        if (localStorage.getItem('apiToken')) {
+                            let quoteDelete = $(document.createElement('button'));
+                            quoteDelete.text('Delete');
+                            quoteDelete.addClass('delete_button');
+                            quoteDelete.addClass('btn btn-danger');
+                            quoteDelete.attr('onclick', "quoteDelete(" + response[i].id + ")");
+                            myForm.append(quoteDelete);
+                            let quoteChange = $(document.createElement('button'));
+                            quoteChange.text('Change');
+                            quoteChange.addClass('change_button');
+                            quoteChange.addClass('btn btn-warning');
+                            quoteChange.attr('onclick', "quoteChangeForm(" + response[i].id + ")");
+                            myForm.append(quoteChange);
+                        }
+                        quote.append(myForm);
+                        quotesContainer.append(quote);
+                    }
+                }
+            })
+        }
+
+        function quoteDetails(num) {
+            $.ajax({
+                url: baseUrl+'quotes/' + num + '/',
+                method: 'get',
+                dataType: 'json',
+                contentType: 'application/json',
+
+                success: function (response) {
+                    if (!localStorage.getItem('apiToken') && response.status==='checked'){
+                        console.log('Доступ запрещен!!!')
+                    }
+                    else{
+                    let myDiv = $('.quotes');
+                    myDiv.text('');
+                    let quote = $(document.createElement('div'));
+                    quote.addClass('quote');
+                    quote.append('<strong>Автор:</strong>' + response.name + '<br><strong>Цитата:</strong>'
+                        + response.text + '<br><strong>Почта:</strong>' + response.email
+                        + '<br><strong>Рейтинг:</strong>' + response.rating + '<br><strong>Статус:</strong>'
+                        + response.status + '<br><strong>Дата создания:</strong>' + response.date_create + '<br>');
+                    let quotesBack = $(document.createElement('button'));
+                    quotesBack.text('Back');
+                    quotesBack.addClass('btn btn-info');
+                    quotesBack.attr('onclick', "loadQuotes()");
+                    quote.append(quotesBack);
+                    myDiv.append(quote);
+
+                    }
+                }
+            })
+        }
+
+        function quoteDelete(num) {
+            $.ajax({
+                url: baseUrl+'quotes/' + num + '/',
+
+                method: 'delete',
+
+                dataType: 'json',
+
+                contentType: 'application/json',
+                headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
+
+                success: function () {
+                    loadQuotes();
+                    popupChange('Удалена цитата ', 2000);
+                }
+            })
+        }
+
+        function quoteRateUp(num, rating, operation) {
+            let newRating = rating;
+            if (operation === 'plus') {
+                newRating += 1;
+            }
+            else {
+                newRating -= 1;
+            }
+            $.ajax({
+                url: baseUrl+'rate/' + num + '/',
+                method: 'patch',
+                data: JSON.stringify({rating: newRating}),
+                dataType: 'json',
+                contentType: 'application/json',
+
+                success: function () {
+                    loadQuotes();
+                    popupChange('Рейтинг изменен', 1000)
+
+                }
+
+            })
+        }
+
+        function popupChange(text, time = 2000) {
+            let loginPopup = $('.alert');
+            loginPopup.removeClass('show');
+            loginPopup.addClass('show');
+            loginPopup.text(text);
+            setTimeout(
+                function () {
+                    loginPopup.removeClass('show')
+                }, time
+            )
+
+        }
+
+        function quoteCreateForm() {
+            let myButton = $('#quotesavebutton_id');
+            myButton.attr('onclick', 'quoteSave()');
+            $('#someid_5').css('display', 'none');
+            $('#someid_4').css('display', 'none');
+            $('#someid_1').css('display', 'block');
+            $('#someid_3').css('display', 'block');
+            $('.create-inputs').val('');
+
+        }
+
+        function quoteChangeForm(num) {
+            $.ajax({
+                url: baseUrl+'quotes/' + num + '/',
+                method: 'get',
+                dataType: 'json',
+                contentType: 'application/json',
+
+                success: function (response) {
+                    let myButton = $('#quotesavebutton_id');
+                    myButton.attr('onclick', 'quoteChangeSave(' + num + ')');
+                    $('#someid_5').css('display', 'block');
+                    $('#someid_4').css('display', 'block');
+                    $('#someid_1').css('display', 'none');
+                    $('#someid_3').css('display', 'none');
+                    $('#input_name_id').val(response.name);
+                    $('#quote_input_id').val(response.text);
+                    $('#rating_input_id').val(response.rating);
+                    $('#mail_input_id').val(response.email);
+                    $('#select_id').val(response.status);
+                    $('#staticBackdrop1').modal('show');
+
+                }
+            });
+        }
+
+        function quoteChangeSave(num) {
+
+            $.ajax({
+                url: baseUrl+'quotes/' + num + '/',
+                method: 'put',
+                data: JSON.stringify({
+                    name: $('#input_name_id').val(),
+                    text: $('#quote_input_id').val(),
+                    email: $('#mail_input_id').val(),
+                    rating: $('#rating_input_id').val(),
+                    status: $('#select_id').val()
+                }),
+                dataType: 'json',
+                contentType: 'application/json',
+                headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
+
+                success: function () {
+                    loadQuotes();
+                    popupChange('Цитата изменена', 1000);
+                    $('#staticBackdrop1').modal('hide');
+                    $('.create-inputs').val('');
+                }
+            })
+
+        }
+
+        function quoteSave() {
+            $.ajax({
+                url: baseUrl+'quotes/',
+                method: 'post',
+                data: JSON.stringify({
+                    name: $('#input_name_id').val(),
+                    text: $('#quote_input_id').val(),
+                    email: $('#mail_input_id').val(),
+                    status: 'new'
+                }),
+                dataType: 'json',
+                contentType: 'application/json',
+
+                success: function () {
+                    loadQuotes();
+                    popupChange('Цитата создана', 1000);
+                    $('#staticBackdrop1').modal('hide');
+                }
+            })
+        }
+    </script>
+
+{% endblock %}
+
