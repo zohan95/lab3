@@ -1,0 +1,38 @@
+[
+{
+  "model": "webapp.quote",
+  "pk": 14,
+  "fields": {
+    "text": "asdsad22",
+    "name": "asdasd",
+    "email": "sad@asdasds.sd",
+    "status": "checked",
+    "rating": -2,
+    "date_create": "2019-12-12T04:38:18.492Z"
+  }
+},
+{
+  "model": "webapp.quote",
+  "pk": 17,
+  "fields": {
+    "text": "sldknfdsnf",
+    "name": "sdf",
+    "email": "dslkfdsf@sadf.sd",
+    "status": "new",
+    "rating": -7,
+    "date_create": "2019-12-12T05:23:22.433Z"
+  }
+},
+{
+  "model": "webapp.quote",
+  "pk": 19,
+  "fields": {
+    "text": "slkdjflkdsjfs",
+    "name": "asdlkdfjdsk",
+    "email": "adsfasd@asd.sd",
+    "status": "new",
+    "rating": 0,
+    "date_create": "2019-12-12T08:21:21.898Z"
+  }
+}
+]
