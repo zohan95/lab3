@@ -73,13 +73,13 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form onsubmit="event.preventDefault()" id="quotecreateform_id">
+                <form onsubmit="event.preventDefault()" id="quotecreateform_id" class="quotecreateclass">
                     <div class="modal-body" id="quoteform_id">
-                        <label id="someid_1">Имя: <input type="text" id="input_name_id" class="create-inputs" required></label><br>
+                        <label id="someid_1">Имя: <input type="text" id="input_name_id" name='input_name_id' class="create-inputs" required></label><br>
                         <label id="someid_2">Цитата: <textarea class="create-inputs" required
                                                                id="quote_input_id"></textarea></label><br>
                         <label id="someid_3">Почта: <input type="email" class="create-inputs" required
-                                                           id="mail_input_id"></label><br>
+                                                           id="mail_input_id" name="mail_input_id"></label><br>
                         <label id="someid_4">Статус:
                             <select id="select_id">
                                 <option value="new">Новое</option>

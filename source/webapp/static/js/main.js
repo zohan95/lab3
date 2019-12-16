@@ -298,8 +298,4 @@ function quoteRateUp(num, rating, operation) {
 
                         }
                     });
-
-            //     }
-            // });
-
         }
