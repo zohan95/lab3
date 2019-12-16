@@ -69,4 +69,4 @@ class RateView(APIView):
         else:
             quote.rating = quote.rating - 1
         quote.save()
-        return JsonResponse({'new':quote.rating})
+        return JsonResponse({'new': quote.rating})

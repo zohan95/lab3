@@ -13,6 +13,3 @@ class QuoteRateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quote
         fields = ('rating',)
-
-
-
