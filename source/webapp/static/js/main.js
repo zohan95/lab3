@@ -95,7 +95,7 @@ function loadQuotes() {
                 quote.addClass('quote');
                 quote.append('<strong>Цитата:</strong>'
                     + response[i].text + '<br><strong>Дата создания:</strong>' + response[i].date_create
-                    + '<br><strong>Рейтинг:</strong>' + response[i].rating + '<br>');
+                    + '<br><strong>Рейтинг:</strong>' + '<span id="rating_id_' + response[i].id + '">' + response[i].rating + '</span>' + '<br>');
                 let myForm = $(document.createElement('form'));
                 myForm.attr('onsubmit', 'event.preventDefault()');
                 let quoteRateUp = $(document.createElement('button'));
@@ -128,6 +128,7 @@ function loadQuotes() {
                     myForm.append(quoteChange);
                 }
                 quote.append(myForm);
+                quote.attr('id', 'quote_id_' + response[i].id);
                 quotesContainer.append(quote);
             }
         }
@@ -178,124 +179,120 @@ function quoteDelete(num) {
         headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
 
         success: function () {
-            loadQuotes();
+            $('#quote_id_' + num).css('display', 'none');
             popupChange('Удалена цитата ', 2000);
+
         }
     })
 }
 
 function quoteRateUp(num, rating, operation) {
+    $.ajax({
+        url: baseUrl + 'rate/' + num + '/',
+        method: 'post',
+        data: JSON.stringify({rating: operation}),
+        dataType: 'json',
+        contentType: 'application/json',
 
-            $.ajax({
-                url: baseUrl + 'rate/' + num + '/',
-                method: 'post',
-                data: JSON.stringify({rating: operation}),
-                dataType: 'json',
-                contentType: 'application/json',
-
-                success: function () {
-                    loadQuotes();
-                    popupChange('Рейтинг изменен', 1000)
-                }
-            })
+        success: function (response) {
+            $('#rating_id_' + num).text(response.new);
+            popupChange('Рейтинг изменен', 1000)
         }
+    })
+}
 
-        function popupChange(text, time = 2000) {
-            let loginPopup = $('.alert');
-            loginPopup.removeClass('show');
-            loginPopup.addClass('show');
-            loginPopup.text(text);
-            setTimeout(
-                function () {
-                    loginPopup.removeClass('show')
-                }, time
-            )
-        }
+function popupChange(text, time = 2000) {
+    let loginPopup = $('.alert');
+    loginPopup.removeClass('show');
+    loginPopup.addClass('show');
+    loginPopup.text(text);
+    setTimeout(
+        function () {
+            loginPopup.removeClass('show')
+        }, time
+    )
+}
 
-        function quoteCreateForm() {
+function quoteCreateForm() {
+    let myButton = $('#quotesavebutton_id');
+    myButton.attr('onclick', 'quoteSave()');
+    $('#someid_5').css('display', 'none');
+    $('#someid_4').css('display', 'none');
+    $('#someid_1').css('display', 'block');
+    $('#someid_3').css('display', 'block');
+    $('.create-inputs').val('');
+
+}
+
+function quoteChangeForm(num) {
+    $.ajax({
+        url: baseUrl + 'quotes/' + num + '/',
+        method: 'get',
+        dataType: 'json',
+        contentType: 'application/json',
+        headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
+
+        success: function (response) {
             let myButton = $('#quotesavebutton_id');
-            myButton.attr('onclick', 'quoteSave()');
-            $('#someid_5').css('display', 'none');
-            $('#someid_4').css('display', 'none');
-            $('#someid_1').css('display', 'block');
-            $('#someid_3').css('display', 'block');
+            myButton.attr('onclick', 'quoteChangeSave(' + num + ')');
+            $('#someid_5').css('display', 'block');
+            $('#someid_4').css('display', 'block');
+            $('#someid_1').css('display', 'none');
+            $('#someid_3').css('display', 'none');
+            $('#input_name_id').val(response.name);
+            $('#quote_input_id').val(response.text);
+            $('#rating_input_id').val(response.rating);
+            $('#mail_input_id').val(response.email);
+            $('#select_id').val(response.status);
+            $('#staticBackdrop1').modal('show');
+        }
+    });
+}
+
+function quoteChangeSave(num) {
+
+    $.ajax({
+        url: baseUrl + 'quotes/' + num + '/',
+        method: 'put',
+        data: JSON.stringify({
+            name: $('#input_name_id').val(),
+            text: $('#quote_input_id').val(),
+            email: $('#mail_input_id').val(),
+            rating: $('#rating_input_id').val(),
+            status: $('#select_id').val()
+        }),
+        dataType: 'json',
+        contentType: 'application/json',
+        headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
+
+        success: function () {
+            loadQuotes();
+            popupChange('Цитата изменена', 1000);
+            $('#staticBackdrop1').modal('hide');
             $('.create-inputs').val('');
+        }
+    })
+
+}
+
+function quoteSave() {
+    $.ajax({
+        url: baseUrl + 'quotes/',
+        method: 'post',
+        data: JSON.stringify({
+            name: $('#input_name_id').val(),
+            text: $('#quote_input_id').val(),
+            email: $('#mail_input_id').val(),
+            status: 'new'
+        }),
+        dataType: 'json',
+        contentType: 'application/json',
+
+        success: function () {
+            loadQuotes();
+            popupChange('Цитата создана', 1000);
+            $('#staticBackdrop1').modal('hide');
 
         }
-
-        function quoteChangeForm(num) {
-            $.ajax({
-                url: baseUrl + 'quotes/' + num + '/',
-                method: 'get',
-                dataType: 'json',
-                contentType: 'application/json',
-                headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
-
-                success: function (response) {
-                    let myButton = $('#quotesavebutton_id');
-                    myButton.attr('onclick', 'quoteChangeSave(' + num + ')');
-                    $('#someid_5').css('display', 'block');
-                    $('#someid_4').css('display', 'block');
-                    $('#someid_1').css('display', 'none');
-                    $('#someid_3').css('display', 'none');
-                    $('#input_name_id').val(response.name);
-                    $('#quote_input_id').val(response.text);
-                    $('#rating_input_id').val(response.rating);
-                    $('#mail_input_id').val(response.email);
-                    $('#select_id').val(response.status);
-                    $('#staticBackdrop1').modal('show');
-
-                }
-            });
-        }
-
-        function quoteChangeSave(num) {
-
-            $.ajax({
-                url: baseUrl + 'quotes/' + num + '/',
-                method: 'put',
-                data: JSON.stringify({
-                    name: $('#input_name_id').val(),
-                    text: $('#quote_input_id').val(),
-                    email: $('#mail_input_id').val(),
-                    rating: $('#rating_input_id').val(),
-                    status: $('#select_id').val()
-                }),
-                dataType: 'json',
-                contentType: 'application/json',
-                headers: {'Authorization': 'Token ' + localStorage.getItem('apiToken')},
-
-                success: function () {
-                    loadQuotes();
-                    popupChange('Цитата изменена', 1000);
-                    $('#staticBackdrop1').modal('hide');
-                    $('.create-inputs').val('');
-                }
-            })
-
-        }
-
-        function quoteSave() {
-            // $('#quotecreateform_id').submit(function () {
-            //     $(this).validate();
-            //     if ($(this).valid()) {
-                    $.ajax({
-                        url: baseUrl + 'quotes/',
-                        method: 'post',
-                        data: JSON.stringify({
-                            name: $('#input_name_id').val(),
-                            text: $('#quote_input_id').val(),
-                            email: $('#mail_input_id').val(),
-                            status: 'new'
-                        }),
-                        dataType: 'json',
-                        contentType: 'application/json',
-
-                        success: function () {
-                            loadQuotes();
-                            popupChange('Цитата создана', 1000);
-                            $('#staticBackdrop1').modal('hide');
-
-                        }
-                    });
-        }
+    });
+}
